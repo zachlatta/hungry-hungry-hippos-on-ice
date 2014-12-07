@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hungry Hungry Hippos on Ice</title>
+
+    <link href="http://fonts.googleapis.com/css?family=Montserrat:700,400"
+      rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+  </head>
+  <body>
+    <h1 id="headline">Hungry Hungry Hippos on Ice</h1>
+
+    <a class="button" href="/create_session">
+      <div class="button" id="start-button">
+        Start
+      </div>
+    </a>
+
+    <script src="/js/vendor/fittext.js"></script>
+    <script>
+var headline = document.getElementById("headline");
+var startButton = document.getElementById("start-button");
+window.fitText(headline);
+window.fitText(startButton);
+    </script>
+  </body>
+</html>

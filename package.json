@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/zachlatta/hungry-hungry-hippos-on-ice/issues"
   },
-  "homepage": "https://github.com/zachlatta/hungry-hungry-hippos-on-ice"
+  "homepage": "https://github.com/zachlatta/hungry-hungry-hippos-on-ice",
+  "dependencies": {
+    "express": "^4.10.4",
+    "socket.io": "^1.2.1"
+  }
 }
