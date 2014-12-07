@@ -29,18 +29,21 @@ io.on('connection', function (socket) {
     socket.emit('player_joined', players[id]);
   }
 
-  players[socket.id] = {id: socket.id, x:0, y:0};
+  players[socket.id] = {id: socket.id, body:{}};
 
   socket.broadcast.emit('player_joined', players[socket.id]);
 
   socket.on('player_move', function (data) {
-    players[socket.id].x = data.x
-    players[socket.id].y = data.y
+    players[socket.id].position = data.position;
+    players[socket.id].velocity = data.velocity;
+    players[socket.id].angle = data.angle;
+    players[socket.id].angularVelocity= data.angularVelocity;
 
     socket.broadcast.emit('player_moved', players[socket.id]);
   });
 
   socket.on('disconnect', function () {
+    console.log('a user disconnected');
     delete players[socket.id];
     socket.broadcast.emit('player_left', {id:socket.id});
   });

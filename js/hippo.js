@@ -1,86 +1,93 @@
-var Hippo = function (id) {
-  this.id = id;
-
+var Hippo = function (x, y) {
   var texture = PIXI.Texture.fromImage('/img/hippo.png');
   PIXI.Sprite.call(this, texture);
+
+  this.anchor.x = 0.5;
+  this.anchor.y = 0.5;
+
+  this.shape = new p2.Rectangle(64,64);
+  this.body = new p2.Body({
+    mass:1,
+    position:[x|0,y|0],
+    angularVelocity:0
+  });
+  this.body.addShape(this.shape);
 };
 
 Hippo.prototype = Object.create(PIXI.Sprite.prototype);
 
 Hippo.SPEED = 0.3;
+Hippo.TURN_SPEED = 2;
+
+Hippo.prototype.update = function (dt) {
+  // update pixi sprite positions to physics body's position
+  this.x = this.body.position[0];
+  this.y = this.body.position[1];
+  this.rotation = this.body.angle;
+};
 
 Hippo.prototype.moveUp = function (dt) {
-  this.y -= Hippo.SPEED * dt;
+  var magnitude = 2;
+  var angle = this.body.angle + Math.PI / 2;
+  this.body.velocity[0] -= magnitude*Math.cos(angle);
+  this.body.velocity[1] -= magnitude*Math.sin(angle);
 };
 
-Hippo.prototype.moveLeft = function (dt) {
-  this.x -= Hippo.SPEED * dt;
+Hippo.prototype.turnLeft = function (dt) {
+  this.body.angularVelocity = -Hippo.TURN_SPEED;
 };
 
-Hippo.prototype.moveRight = function (dt) {
-  this.x += Hippo.SPEED * dt;
+Hippo.prototype.turnRight = function (dt) {
+  this.body.angularVelocity = Hippo.TURN_SPEED;
 };
 
-Hippo.prototype.moveDown = function (dt) {
-  this.y += Hippo.SPEED * dt;
-};
+Hippo.prototype.clearTurn = function (dt) {
+  this.body.angularVelocity = 0;
+}
 
-var OpponentHippo = function (id) {
-  Hippo.call(this, id);
+var OpponentHippo = function () {
+  Hippo.call(this);
 }
 
 OpponentHippo.prototype = Object.create(Hippo.prototype);
 
-OpponentHippo.prototype.update = function (dt) {
-};
-
-var PlayerHippo = function (id) {
-  Hippo.call(this, id);
+var PlayerHippo = function (x, y) {
+  Hippo.call(this, x, y);
 }
 
 PlayerHippo.prototype = Object.create(Hippo.prototype);
 
-PlayerHippo.prototype.moveUp = function (dt) {
-  Hippo.prototype.moveUp.call(this, dt);
-  socket.emit('player_move', {x:this.x, y:this.y});
-};
-
-PlayerHippo.prototype.moveLeft = function (dt) {
-  Hippo.prototype.moveLeft.call(this, dt);
-  socket.emit('player_move', {x:this.x, y:this.y});
-};
-
-PlayerHippo.prototype.moveRight = function (dt) {
-  Hippo.prototype.moveRight.call(this, dt);
-  socket.emit('player_move', {x:this.x, y:this.y});
-};
-
-PlayerHippo.prototype.moveDown = function (dt) {
-  Hippo.prototype.moveDown.call(this, dt);
-  socket.emit('player_move', {x:this.x, y:this.y});
-};
-
 PlayerHippo.prototype.update = function (dt) {
+  Hippo.prototype.update.call(this, dt);
+
   if (Key.isDown(Key.UP) || Key.isDown(Key.W)) this.moveUp(dt);
-  if (Key.isDown(Key.LEFT) || Key.isDown(Key.A)) this.moveLeft(dt);
-  if (Key.isDown(Key.RIGHT) || Key.isDown(Key.D)) this.moveRight(dt);
-  if (Key.isDown(Key.DOWN) || Key.isDown(Key.S)) this.moveDown(dt);
+
+  if (Key.isDown(Key.LEFT) || Key.isDown(Key.A))       this.turnLeft(dt);
+  else if (Key.isDown(Key.RIGHT) || Key.isDown(Key.D)) this.turnRight(dt);
+  else                                                 this.clearTurn(dt);
+
+  socket.emit('player_move', {
+    position: this.body.position,
+    velocity: this.body.velocity,
+    angle: this.body.angle,
+    angularVelocity: this.body.angularVelocity
+  });
 };
 
-var Background = function (stage) {
-  this.hippo = new PlayerHippo();
+var Background = function (stage, world) {
+  this.hippo = new PlayerHippo(100, 100);
   this.opponents = {};
 
   stage.addChild(this.hippo);
+  world.addBody(this.hippo.body);
 
   var that = this;
   socket.on('player_joined', function (data) {
     console.log('player joined');
     var opponent = new OpponentHippo();
-    opponent.x = data.x;
-    opponent.y = data.y;
 
     stage.addChild(opponent);
+    world.addBody(opponent.body);
     that.opponents[data.id] = opponent;
   });
 
@@ -91,8 +98,10 @@ var Background = function (stage) {
   });
 
   socket.on('player_moved', function (data) {
-    that.opponents[data.id].x = data.x;
-    that.opponents[data.id].y = data.y;
+    that.opponents[data.id].body.position = data.position;
+    that.opponents[data.id].body.velocity = data.velocity;
+    that.opponents[data.id].body.angle = data.angle;
+    that.opponents[data.id].body.angularVelocity = data.angularVelocity;
   });
 };
 
