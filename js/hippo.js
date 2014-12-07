@@ -61,10 +61,10 @@ PlayerHippo.prototype.moveDown = function (dt) {
 };
 
 PlayerHippo.prototype.update = function (dt) {
-  if (Key.isDown(Key.UP)) this.moveUp(dt);
-  if (Key.isDown(Key.LEFT)) this.moveLeft(dt);
-  if (Key.isDown(Key.RIGHT)) this.moveRight(dt);
-  if (Key.isDown(Key.DOWN)) this.moveDown(dt);
+  if (Key.isDown(Key.UP) || Key.isDown(Key.W)) this.moveUp(dt);
+  if (Key.isDown(Key.LEFT) || Key.isDown(Key.A)) this.moveLeft(dt);
+  if (Key.isDown(Key.RIGHT) || Key.isDown(Key.D)) this.moveRight(dt);
+  if (Key.isDown(Key.DOWN) || Key.isDown(Key.S)) this.moveDown(dt);
 };
 
 var Background = function (stage) {
@@ -91,7 +91,6 @@ var Background = function (stage) {
   });
 
   socket.on('player_moved', function (data) {
-    console.log('moved', data);
     that.opponents[data.id].x = data.x;
     that.opponents[data.id].y = data.y;
   });
