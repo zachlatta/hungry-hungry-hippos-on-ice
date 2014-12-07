@@ -7,7 +7,7 @@ var Hippo = function (x, y) {
 
   this.shape = new p2.Rectangle(64,64);
   this.body = new p2.Body({
-    mass:1,
+    mass:10,
     position:[x|0,y|0],
     angularVelocity:0
   });
